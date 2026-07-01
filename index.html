@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Management Dashboard</title>
+	 <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images.png">
+    <!-- Google Fonts: Poppins for Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- html2pdf.js CDN for Direct Client-Side PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e1e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 30px -10px rgba(0, 0, 0, 0.08)',
+                        'premium-dark': '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
+                        'neon': '0 0 15px rgba(99, 102, 241, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #1e1e2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* Print Media Styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-full-width {
+                width: 100% !important;
+                max-width: 100% !important;
+                grid-template-columns: 1fr !important;
+            }
+            .print-table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            .print-table th, .print-table td {
+                border: 1px solid #e2e8f0 !important;
+                padding: 8px !important;
+                color: #000 !important;
+            }
+        }
+
+        /* Smooth CSS Transitions */
+        .transition-all-300 {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Keyframes for subtle animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fadeInUp {
+            animation: fadeInUp 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-[#f8fafc] dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 min-h-screen flex flex-col antialiased">
+
+    <!-- Premium Toast Alerts Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full no-print"></div>
+
+    <!-- Header Section -->
+    <header class="sticky top-0 z-30 w-full glass-card border-b border-slate-200/50 dark:border-slate-800/50 no-print transition-all-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3.5">
+                <div class="bg-gradient-to-tr from-brand-500 to-purple-600 p-2.5 rounded-2xl shadow-neon flex items-center justify-center text-white transform hover:scale-105 transition-all-300">
+                    <i data-lucide="calculator" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent dark:from-brand-100 dark:to-purple-300">
+                        Meal Management
+                    </h1>
+                    <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 tracking-wide uppercase font-semibold">
+                        Made: MD Nahiduzzaman Dipu
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <!-- Theme Toggler -->
+                <button id="theme-toggle" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all-300 text-slate-600 dark:text-slate-300" aria-label="Toggle Dark Mode">
+                    <i id="theme-icon-light" data-lucide="sun" class="w-5 h-5 hidden"></i>
+                    <i id="theme-icon-dark" data-lucide="moon" class="w-5 h-5"></i>
+                </button>
+                <div class="hidden md:flex flex-col items-end">
+                    <span id="current-date" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Loading date...</span>
+                    <span class="text-[10px] text-brand-500 dark:text-brand-400 font-bold uppercase tracking-wider">Status: Offline Mode</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header Hero Block (No-Print) -->
+        <div class="mb-8 text-center md:text-left no-print animate-fadeInUp">
+            <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Meal Management Calculator
+            </h2>
+            <p class="mt-2 text-base md:text-lg text-slate-500 dark:text-slate-400">
+                Manage bachelor meal expenses, dynamic sub-contributions, shared utilities, and automatic payouts in real-time.
+            </p>
+        </div>
+
+        <!-- 4 Summary Stats Cards - Optimised with grid-cols-2 for perfect 2-row layout on mobile -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 animate-fadeInUp" style="animation-delay: 0.1s;">
+            <!-- Total Members Card -->
+            <div class="glass-card shadow-premium dark:shadow-premium-dark rounded-2xl p-4 sm:p-6 relative overflow-hidden group hover:shadow-2xl transition-all-300 transform hover:-translate-y-1">
+                <div class="absolute -right-3 -bottom-3 text-brand-500/10 dark:text-brand-400/5 group-hover:scale-110 transition-all-300">
+                    <i data-lucide="users" class="w-16 h-16 sm:w-24 sm:h-24"></i>
+                </div>
+                <div class="flex items-center justify-between mb-2 sm:mb-4">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Members</span>
+                    <div class="p-1.5 sm:p-2 bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-xl">
+                        <i data-lucide="users" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span id="stat-total-members" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">0</span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500">Active</span>
+                </div>
+            </div>
+
+            <!-- Total Meals Card -->
+            <div class="glass-card shadow-premium dark:shadow-premium-dark rounded-2xl p-4 sm:p-6 relative overflow-hidden group hover:shadow-2xl transition-all-300 transform hover:-translate-y-1">
+                <div class="absolute -right-3 -bottom-3 text-orange-500/10 group-hover:scale-110 transition-all-300">
+                    <i data-lucide="soup" class="w-16 h-16 sm:w-24 sm:h-24"></i>
+                </div>
+                <div class="flex items-center justify-between mb-2 sm:mb-4">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Meals</span>
+                    <div class="p-1.5 sm:p-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-xl">
+                        <i data-lucide="soup" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span id="stat-total-meals" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">0</span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500">Meals</span>
+                </div>
+            </div>
+
+            <!-- Total Cost Card -->
+            <div class="glass-card shadow-premium dark:shadow-premium-dark rounded-2xl p-4 sm:p-6 relative overflow-hidden group hover:shadow-2xl transition-all-300 transform hover:-translate-y-1">
+                <div class="absolute -right-3 -bottom-3 text-emerald-500/10 group-hover:scale-110 transition-all-300">
+                    <i data-lucide="wallet" class="w-16 h-16 sm:w-24 sm:h-24"></i>
+                </div>
+                <div class="flex items-center justify-between mb-2 sm:mb-4">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Total Cost</span>
+                    <div class="p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                        <i data-lucide="wallet" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span id="stat-total-cost" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white truncate">৳0.00</span>
+                </div>
+            </div>
+
+            <!-- Meal Rate Card -->
+            <div class="glass-card shadow-premium dark:shadow-premium-dark rounded-2xl p-4 sm:p-6 relative overflow-hidden group hover:shadow-2xl transition-all-300 transform hover:-translate-y-1">
+                <div class="absolute -right-3 -bottom-3 text-purple-500/10 group-hover:scale-110 transition-all-300">
+                    <i data-lucide="percent" class="w-16 h-16 sm:w-24 sm:h-24"></i>
+                </div>
+                <div class="flex items-center justify-between mb-2 sm:mb-4">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Meal Rate</span>
+                    <div class="p-1.5 sm:p-2 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl">
+                        <i data-lucide="trending-up" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span id="stat-meal-rate" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white truncate">৳0.00</span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500">/Meal</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Grid Workspace -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Workspace: Utilities & Manage Members (No-Print) -->
+            <section class="lg:col-span-5 flex flex-col gap-6 no-print animate-fadeInUp" style="animation-delay: 0.2s;">
+                
+                <!-- Shared Utilities Configuration Card -->
+                <div class="glass-card shadow-premium dark:shadow-premium-dark rounded-2xl p-6 border-l-4 border-indigo-500">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                            <i data-lucide="bolt" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Shared Utilities Bill</h3>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Divided equally among all active members</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1 tracking-wider">Total Utilities Amount (৳)</label>
+                            <input type="text" id="input-utilities-bill" class="w-full px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-brand-500 focus:outline-none dark:text-white transition-all font-semibold" value="0" placeholder="e.g. 1500+800+500" />
+                        </div>
+                        <div class="flex items-center justify-between text-xs font-semibold pt-1 border-t border-slate-100 dark:border-slate-800/50">
+                            <span class="text-slate-500 dark:text-slate-400">Per Head Share:</span>
+                            <span id="utilities-per-head" class="text-brand-600 dark:text-brand-400 font-bold">৳0.00</span>
+                        </div>
+                        <div id="utilities-feedback" class="text-[10px] font-medium italic">
+                            <!-- Real-time feedback -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manage Members Container Card -->
+                <div class="glass-card shadow-premium dark:shadow-premium-dark rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Manage Members</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Add individuals, custom profile image links and adjust meal counts.</p>
+                        </div>
+                        <button id="btn-add-member" class="px-4 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 shadow-md hover:shadow-lg transform active:scale-95 transition-all-300">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            <span>Add Member</span>
+                        </button>
+                    </div>
+
+                    <!-- Member Cards Dynamic List -->
+                    <div id="members-list-container" class="space-y-4 max-h-[580px] overflow-y-auto pr-2">
+                        <!-- Dynamic member cards are injected here -->
+                    </div>
+
+                    <!-- Empty State View -->
+                    <div id="empty-state-view" class="py-12 flex flex-col items-center justify-center text-center">
+                        <div class="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-4 border border-slate-200/50 dark:border-slate-800/50">
+                            <i data-lucide="users" class="w-10 h-10 text-slate-400"></i>
+                        </div>
+                        <h4 class="text-base font-bold text-slate-800 dark:text-slate-200">No Members Added Yet</h4>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 max-w-[280px] mt-1">Get started by adding your roommates, bachelors, or team members to compute meal shares.</p>
+                        <button id="btn-empty-add" class="mt-4 px-4 py-2 bg-brand-50 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-semibold rounded-lg transition-all-300">
+                            Click here to add first member
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Workspace: Results, Analytics & Reports -->
+            <section class="lg:col-span-7 flex flex-col gap-6 print-full-width animate-fadeInUp" style="animation-delay: 0.3s;">
+                
+                <!-- Results Matrix View -->
+                <div class="glass-card shadow-premium dark:shadow-premium-dark rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/50">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="layout-dashboard" class="w-5 h-5 text-brand-500"></i>
+                                Expense Distribution
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Review dynamic balances, meal statuses, and overall math.</p>
+                        </div>
+                        
+                        <!-- Mini manual control triggers (No-Print) -->
+                        <div class="flex items-center gap-2 no-print">
+                            <button id="btn-manual-calculate" class="px-3 py-1.5 bg-brand-50 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-bold rounded-lg transition-all-300 flex items-center gap-1.5" title="Force Recalculate">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                Calculate
+                            </button>
+                            <button id="btn-reset" class="px-3 py-1.5 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-lg transition-all-300 flex items-center gap-1.5" title="Reset All Data">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Data Grid/Table -->
+                    <div class="overflow-x-auto w-full">
+                        <table id="results-table" class="w-full text-left border-collapse print-table">
+                            <thead>
+                                <tr class="border-b border-slate-100 dark:border-slate-800/50 text-[11px] font-bold tracking-wider uppercase text-slate-400">
+                                    <th class="pb-3 pl-2">Name</th>
+                                    <th class="pb-3 text-center">Meals</th>
+                                    <th class="pb-3 text-right">Paid (Cost)</th>
+                                    <th class="pb-3 text-right">Should Pay <span class="text-[9px] block text-slate-400 font-normal normal-case">(Meals + Util)</span></th>
+                                    <th class="pb-3 text-right">Net Balance</th>
+                                    <th class="pb-3 pr-2 text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm">
+                                <!-- Dynamic dynamic records go here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Visual Empty Indicator inside table space -->
+                    <div id="table-empty-fallback" class="py-8 text-center text-xs text-slate-400 dark:text-slate-500 hidden">
+                        No calculated outputs available. Add valid members on the left side first.
+                    </div>
+                </div>
+
+                <!-- Premium Auxiliary Insight Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <!-- High / Low Meals Card -->
+                    <div class="glass-card rounded-2xl p-4 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                        <span class="text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Meal Outliers</span>
+                        <div class="mt-2 space-y-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-500">Highest:</span>
+                                <span id="insight-highest-meal" class="font-bold text-slate-800 dark:text-slate-200">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-500">Lowest:</span>
+                                <span id="insight-lowest-meal" class="font-bold text-slate-800 dark:text-slate-200">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- High / Low Cost Contributions Card -->
+                    <div class="glass-card rounded-2xl p-4 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                        <span class="text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Payment Outliers</span>
+                        <div class="mt-2 space-y-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-500">Highest Cost:</span>
+                                <span id="insight-highest-cost" class="font-bold text-slate-800 dark:text-slate-200">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-500">Lowest Cost:</span>
+                                <span id="insight-lowest-cost" class="font-bold text-slate-800 dark:text-slate-200">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Net Financial Discrepancies Card -->
+                    <div class="glass-card rounded-2xl p-4 shadow-premium dark:shadow-premium-dark flex flex-col justify-between sm:col-span-2 md:col-span-1">
+                        <span class="text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Total Extra / Receivables</span>
+                        <div class="mt-2 space-y-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-emerald-500 font-medium">To Receive:</span>
+                                <span id="insight-total-extra" class="font-bold text-emerald-600 dark:text-emerald-400">৳0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-rose-500 font-medium">To Pay:</span>
+                                <span id="insight-total-due" class="font-bold text-rose-600 dark:text-rose-400">৳0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export & System Action Buttons (No-Print) -->
+                <div class="glass-card shadow-premium dark:shadow-premium-dark rounded-2xl p-6 no-print">
+                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-4">Export Utilities & Reports</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button id="btn-print" class="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all-300 hover:scale-[1.02]">
+                            <i data-lucide="printer" class="w-4 h-4 text-indigo-500"></i>
+                            Print Report
+                        </button>
+                        <button id="btn-download-pdf" class="p-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all-300 hover:scale-[1.02] shadow-md hover:shadow-lg">
+                            <i data-lucide="file-text" class="w-4 h-4 text-white"></i>
+                            Download PDF (Direct)
+                        </button>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer Space -->
+    <footer class="mt-12 py-8 bg-slate-100 dark:bg-slate-900/50 border-t border-slate-200/50 dark:border-slate-800/40 text-center text-xs text-slate-400 no-print">
+        <p>© 2026 Meal Management Calculator. Crafted for professional household resource accounting.</p>
+        <p class="mt-1 font-semibold text-slate-500">Pure Offline Secure Client Ledger</p>
+    </footer>
+
+    <!-- JavaScript Logic Block -->
+    <script>
+        // System State Data Structure
+        let members = [];
+        let utilitiesRaw = '0';
+        
+        // Key References & Constants
+        const LOCAL_STORAGE_KEY = 'bachelor_meal_ledger_2026';
+        const APP_ID_SELECTOR = typeof __app_id !== 'undefined' ? __app_id : 'bachelor-meal-app-id';
+
+        // DOM Element Selectors
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIconLight = document.getElementById('theme-icon-light');
+        const themeIconDark = document.getElementById('theme-icon-dark');
+        const currentDateSpan = document.getElementById('current-date');
+        const toastContainer = document.getElementById('toast-container');
+        
+        const btnAddMember = document.getElementById('btn-add-member');
+        const btnEmptyAdd = document.getElementById('btn-empty-add');
+        const membersListContainer = document.getElementById('members-list-container');
+        const emptyStateView = document.getElementById('empty-state-view');
+
+        // Utilities inputs
+        const inputUtilitiesBill = document.getElementById('input-utilities-bill');
+        const utilitiesPerHead = document.getElementById('utilities-per-head');
+        const utilitiesFeedback = document.getElementById('utilities-feedback');
+        
+        // Summary Card Stats Elements
+        const statTotalMembers = document.getElementById('stat-total-members');
+        const statTotalMeals = document.getElementById('stat-total-meals');
+        const statTotalCost = document.getElementById('stat-total-cost');
+        const statMealRate = document.getElementById('stat-meal-rate');
+
+        // Table & Insights Elements
+        const resultsTableTbody = document.getElementById('results-tbody');
+        const tableEmptyFallback = document.getElementById('table-empty-fallback');
+        const btnManualCalculate = document.getElementById('btn-manual-calculate');
+        const btnReset = document.getElementById('btn-reset');
+
+        const insightHighestMeal = document.getElementById('insight-highest-meal');
+        const insightLowestMeal = document.getElementById('insight-lowest-meal');
+        const insightHighestCost = document.getElementById('insight-highest-cost');
+        const insightLowestCost = document.getElementById('insight-lowest-cost');
+        const insightTotalExtra = document.getElementById('insight-total-extra');
+        const insightTotalDue = document.getElementById('insight-total-due');
+
+        // Action Buttons
+        const btnPrint = document.getElementById('btn-print');
+        const btnDownloadPdf = document.getElementById('btn-download-pdf');
+
+        // On System Initialization Load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
+            renderCurrentDate();
+            loadFromLocalStorage();
+            triggerMainCalculation();
+            
+            // Render beautiful interactive lucide SVG indicators
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+
+        // Current Date Tracker
+        function renderCurrentDate() {
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+            currentDateSpan.textContent = today.toLocaleDateString('en-US', options);
+        }
+
+        // Elegant Light/Dark Mode Mechanism
+        function initializeTheme() {
+            const cachedTheme = localStorage.getItem('bachelor_meal_theme');
+            if (cachedTheme === 'dark' || (!cachedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                themeIconLight.classList.remove('hidden');
+                themeIconDark.classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIconLight.classList.add('hidden');
+                themeIconDark.classList.remove('hidden');
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('bachelor_meal_theme', isDark ? 'dark' : 'light');
+            
+            if (isDark) {
+                themeIconLight.classList.remove('hidden');
+                themeIconDark.classList.add('hidden');
+                showToast('Switched to Dark Mode', 'success');
+            } else {
+                themeIconLight.classList.add('hidden');
+                themeIconDark.classList.remove('hidden');
+                showToast('Switched to Light Mode', 'success');
+            }
+        });
+
+        // Dynamic Native Custom Toasts (Safe for sandboxed environments)
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-4 rounded-xl shadow-lg border text-xs font-semibold transition-all-300 transform translate-y-2 opacity-0 glass-card`;
+            
+            let iconCode = '';
+            if (type === 'success') {
+                toast.classList.add('border-emerald-500/30', 'text-emerald-600', 'dark:text-emerald-400');
+                iconCode = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>`;
+            } else if (type === 'error') {
+                toast.classList.add('border-rose-500/30', 'text-rose-600', 'dark:text-rose-400');
+                iconCode = `<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i>`;
+            } else {
+                toast.classList.add('border-slate-500/30', 'text-slate-600', 'dark:text-slate-400');
+                iconCode = `<i data-lucide="info" class="w-4 h-4 text-brand-500"></i>`;
+            }
+
+            toast.innerHTML = `
+                ${iconCode}
+                <span>${message}</span>
+            `;
+
+            toastContainer.appendChild(toast);
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({ attrs: { class: ['w-4', 'h-4'] } });
+            }
+
+            // Slide Up & Fade In
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+
+            // Hide and destroy
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Cost Parser Function without using unsafe eval()
+        function parseCost(rawString) {
+            if (!rawString || rawString.trim() === '') {
+                return { total: 0, isValid: true, expression: '0', error: '' };
+            }
+            // Sanitize spaces and trim
+            const sanitized = rawString.replace(/\s+/g, '');
+            
+            // Validation: Only permit positive decimals and addition plus operators
+            if (!/^[0-9+.]*$/.test(sanitized)) {
+                return { total: 0, isValid: false, expression: '', error: 'Only positive numbers and "+" allowed' };
+            }
+            
+            // Check for empty/dangling split structures like "200++" or "100+" or "+100"
+            const segments = sanitized.split('+');
+            let totalSum = 0;
+            
+            for (let i = 0; i < segments.length; i++) {
+                const part = segments[i];
+                if (part === '') {
+                    return { total: 0, isValid: false, expression: '', error: 'Incomplete addition expression detected' };
+                }
+                const parsedNum = Number(part);
+                if (isNaN(parsedNum) || parsedNum < 0) {
+                    return { total: 0, isValid: false, expression: '', error: 'Contains invalid numbers' };
+                }
+                totalSum += parsedNum;
+            }
+            
+            return { total: totalSum, isValid: true, expression: segments.join(' + '), error: '' };
+        }
+
+        // Listen for global utility bill changes
+        inputUtilitiesBill.addEventListener('input', (e) => {
+            utilitiesRaw = e.target.value;
+            triggerMainCalculation();
+        });
+
+        // Live calculation and storage driver
+        function triggerMainCalculation() {
+            const stats = calculateSummary();
+            updateDashboard(stats);
+            renderTable(stats);
+            saveToLocalStorage();
+        }
+
+        // Calculate dynamic balances, utility divisions, and core ledger summaries
+        function calculateSummary() {
+            let totalMembersCount = 0;
+            let totalMealsCount = 0;
+            let totalCostCount = 0;
+
+            // 1. Process Utilities
+            const utilAnalysis = parseCost(utilitiesRaw);
+            const totalUtilities = utilAnalysis.isValid ? utilAnalysis.total : 0;
+
+            // Render live utility feedback indicators
+            if (utilitiesFeedback && utilitiesPerHead) {
+                if (!utilAnalysis.isValid) {
+                    utilitiesFeedback.innerHTML = `<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> ${utilAnalysis.error}</span>`;
+                    utilitiesPerHead.textContent = '৳0.00';
+                } else {
+                    utilitiesFeedback.innerHTML = `<span class="text-emerald-500 dark:text-emerald-400 flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> Auto-parsed: ৳${utilAnalysis.total.toFixed(2)} (${utilAnalysis.expression})</span>`;
+                }
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+            
+            // 2. Validate member details and sum base assets
+            const evaluatedMembers = members.map(m => {
+                const costAnalysis = parseCost(m.costRaw);
+                const mealVal = parseFloat(m.meals) || 0;
+                
+                const isMemberNameValid = m.name && m.name.trim() !== '';
+                const isMealsValid = mealVal >= 0; // Support starting at 0 properly
+                const isDuplicate = checkDuplicateName(m.id, m.name);
+                
+                const isValid = isMemberNameValid && isMealsValid && costAnalysis.isValid && !isDuplicate;
+                
+                let validationErrorMsg = '';
+                if (!isMemberNameValid) validationErrorMsg = "Name cannot be empty.";
+                else if (isDuplicate) validationErrorMsg = "Duplicate member name detected.";
+                else if (!isMealsValid) validationErrorMsg = "Meals must be positive.";
+                else if (!costAnalysis.isValid) validationErrorMsg = costAnalysis.error;
+
+                if (isValid) {
+                    totalMembersCount++;
+                    totalMealsCount += mealVal;
+                    totalCostCount += costAnalysis.total;
+                }
+
+                return {
+                    ...m,
+                    meals: mealVal,
+                    costParsed: costAnalysis.total,
+                    isValid,
+                    validationErrorMsg,
+                    costErrorMsg: costAnalysis.error
+                };
+            });
+
+            // Calculate meal rate securely
+            const computedMealRate = totalMealsCount > 0 ? (totalCostCount / totalMealsCount) : 0;
+
+            // Calculate equal utility distribution share
+            const activeValidMembersCount = evaluatedMembers.filter(m => m.isValid).length;
+            const utilitySharePerHead = activeValidMembersCount > 0 ? (totalUtilities / activeValidMembersCount) : 0;
+
+            // Update utilities display head-share
+            if (utilitiesPerHead) {
+                utilitiesPerHead.textContent = '৳' + utilitySharePerHead.toFixed(2);
+            }
+
+            // Compute individualized payout differences (Meals + Utilities combined)
+            let extraMoneySum = 0;
+            let dueMoneySum = 0;
+            
+            let maxMeal = -Infinity;
+            let minMeal = Infinity;
+            let maxCost = -Infinity;
+            let minCost = Infinity;
+
+            let highestMealOwners = [];
+            let lowestMealOwners = [];
+            let highestCostOwners = [];
+            let lowestCostOwners = [];
+
+            const processedData = evaluatedMembers.map(m => {
+                if (!m.isValid) {
+                    return { ...m, shouldPayMeals: 0, shouldPayUtilities: 0, totalShouldPay: 0, balance: 0, status: 'Invalid' };
+                }
+                
+                const shouldPayMeals = m.meals * computedMealRate;
+                const shouldPayUtilities = utilitySharePerHead;
+                const totalShouldPay = shouldPayMeals + shouldPayUtilities;
+                const balance = m.costParsed - totalShouldPay;
+                
+                let status = 'Settled';
+                if (balance > 0.005) {
+                    status = 'Receive Money';
+                    extraMoneySum += balance;
+                } else if (balance < -0.005) {
+                    status = 'Need To Pay';
+                    dueMoneySum += Math.abs(balance);
+                }
+
+                // Gather analytical insights
+                if (m.meals > maxMeal) { maxMeal = m.meals; highestMealOwners = [m.name]; }
+                else if (m.meals === maxMeal) { highestMealOwners.push(m.name); }
+
+                if (m.meals < minMeal) { minMeal = m.meals; lowestMealOwners = [m.name]; }
+                else if (m.meals === minMeal) { lowestMealOwners.push(m.name); }
+
+                if (m.costParsed > maxCost) { maxCost = m.costParsed; highestCostOwners = [m.name]; }
+                else if (m.costParsed === maxCost) { highestCostOwners.push(m.name); }
+
+                if (m.costParsed < minCost) { minCost = m.costParsed; lowestCostOwners = [m.name]; }
+                else if (m.costParsed === minCost) { lowestCostOwners.push(m.name); }
+
+                return {
+                    ...m,
+                    shouldPayMeals,
+                    shouldPayUtilities,
+                    totalShouldPay,
+                    balance,
+                    status
+                };
+            });
+
+            return {
+                members: processedData,
+                totalMembers: totalMembersCount,
+                totalMeals: totalMealsCount,
+                totalCost: totalCostCount,
+                totalUtilities,
+                utilitySharePerHead,
+                mealRate: computedMealRate,
+                totalExtra: extraMoneySum,
+                totalDue: dueMoneySum,
+                insights: {
+                    highestMeal: maxMeal === -Infinity ? null : { value: maxMeal, owners: highestMealOwners },
+                    lowestMeal: minMeal === Infinity ? null : { value: minMeal, owners: lowestMealOwners },
+                    highestCost: maxCost === -Infinity ? null : { value: maxCost, owners: highestCostOwners },
+                    lowestCost: minCost === Infinity ? null : { value: minCost, owners: lowestCostOwners }
+                }
+            };
+        }
+
+        // Ensure single-instance dynamic user titles
+        function checkDuplicateName(currentId, name) {
+            if (!name || name.trim() === '') return false;
+            const searchName = name.trim().toLowerCase();
+            return members.some(m => m.id !== currentId && m.name.trim().toLowerCase() === searchName);
+        }
+
+        // Live dashboard DOM updater
+        function updateDashboard(stats) {
+            statTotalMembers.textContent = stats.totalMembers;
+            statTotalMeals.textContent = stats.totalMeals.toFixed(1).replace(/\.0$/, '');
+            statTotalCost.textContent = formatCurrency(stats.totalCost);
+            statMealRate.textContent = formatCurrency(stats.mealRate);
+
+            // Render Insights auxiliary values
+            if (stats.totalMembers > 0) {
+                insightHighestMeal.innerHTML = stats.insights.highestMeal 
+                    ? `${stats.insights.highestMeal.value} <span class="text-[10px] text-slate-400">(${truncateList(stats.insights.highestMeal.owners)})</span>`
+                    : 'N/A';
+                
+                insightLowestMeal.innerHTML = stats.insights.lowestMeal 
+                    ? `${stats.insights.lowestMeal.value} <span class="text-[10px] text-slate-400">(${truncateList(stats.insights.lowestMeal.owners)})</span>`
+                    : 'N/A';
+
+                insightHighestCost.innerHTML = stats.insights.highestCost 
+                    ? `৳${stats.insights.highestCost.value} <span class="text-[10px] text-slate-400">(${truncateList(stats.insights.highestCost.owners)})</span>`
+                    : 'N/A';
+
+                insightLowestCost.innerHTML = stats.insights.lowestCost 
+                    ? `৳${stats.insights.lowestCost.value} <span class="text-[10px] text-slate-400">(${truncateList(stats.insights.lowestCost.owners)})</span>`
+                    : 'N/A';
+
+                insightTotalExtra.textContent = formatCurrency(stats.totalExtra);
+                insightTotalDue.textContent = formatCurrency(stats.totalDue);
+            } else {
+                insightHighestMeal.textContent = 'N/A';
+                insightLowestMeal.textContent = 'N/A';
+                insightHighestCost.textContent = 'N/A';
+                insightLowestCost.textContent = 'N/A';
+                insightTotalExtra.textContent = '৳0.00';
+                insightTotalDue.textContent = '৳0.00';
+            }
+        }
+
+        function truncateList(arr) {
+            if (!arr || arr.length === 0) return 'None';
+            if (arr.length <= 1) return arr[0];
+            return `${arr[0]} +${arr.length - 1}`;
+        }
+
+        // Format raw integers to premium currencies (৳ in local formatting)
+        function formatCurrency(val) {
+            return '৳' + val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Save layout structures to client's window offline space
+        function saveToLocalStorage() {
+            const dataToSave = {
+                members: members,
+                utilitiesRaw: utilitiesRaw
+            };
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+        }
+
+        // Reload data safely
+        function loadFromLocalStorage() {
+            const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (raw) {
+                try {
+                    const parsedData = JSON.parse(raw);
+                    
+                    if (parsedData && typeof parsedData === 'object' && 'members' in parsedData) {
+                        members = parsedData.members || [];
+                        utilitiesRaw = parsedData.utilitiesRaw || '0';
+                    } else {
+                        // Support migrating older schema array versions gracefully
+                        members = Array.isArray(parsedData) ? parsedData : [];
+                        utilitiesRaw = '0';
+                    }
+                    
+                    inputUtilitiesBill.value = utilitiesRaw;
+                    renderMembersList();
+                } catch (e) {
+                    console.error("Failed to parse localized payload", e);
+                    members = [];
+                    utilitiesRaw = '0';
+                }
+            } else {
+                // Prepopulate with a randomized order of the specified names, with meals and cost set to 0
+                const defaultNames = ['Dipu', 'Faisal', 'Shahin', 'Hridoy', 'Ashmaul', 'Sajjad'];
+                const shuffledNames = [...defaultNames].sort(() => Math.random() - 0.5);
+                
+                members = shuffledNames.map((name, index) => ({
+                    id: (index + 1).toString(),
+                    name: name,
+                    meals: 0,
+                    costRaw: '0',
+                    avatarUrl: ''
+                }));
+                utilitiesRaw = '0';
+                inputUtilitiesBill.value = '0';
+                renderMembersList();
+            }
+        }
+
+        // Interactive dynamic visual member elements
+        function renderMembersList() {
+            membersListContainer.innerHTML = '';
+            
+            if (members.length === 0) {
+                emptyStateView.classList.remove('hidden');
+                return;
+            } else {
+                emptyStateView.classList.add('hidden');
+            }
+
+            members.forEach((m) => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white/50 dark:bg-slate-900/40 shadow-sm relative group hover:border-brand-500/40 dark:hover:border-brand-500/30 transition-all-300 transform animate-fadeInUp`;
+                card.setAttribute('data-id', m.id);
+
+                const costInfo = parseCost(m.costRaw);
+                const hasNameError = !m.name || m.name.trim() === '';
+                const hasMealError = m.meals === '' || parseFloat(m.meals) < 0; 
+                const hasCostError = !costInfo.isValid;
+                const isDuplicate = checkDuplicateName(m.id, m.name);
+
+                // Build avatar preview with dynamic fallback
+                const fallbackAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name || 'User')}`;
+                const finalAvatarSrc = m.avatarUrl && m.avatarUrl.trim() !== '' ? m.avatarUrl : fallbackAvatar;
+
+                card.innerHTML = `
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <!-- Avatar Preview with error fallback -->
+                            <div class="relative flex-shrink-0">
+                                <img src="${finalAvatarSrc}" 
+                                     alt="Profile image" 
+                                     class="w-10 h-10 rounded-full border-2 border-brand-500/30 dark:border-brand-500/20 object-cover bg-slate-100 dark:bg-slate-900 shadow-sm"
+                                     onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name || 'User')}';" />
+                            </div>
+
+                            <!-- Header Context (Name Input & Delete Button) -->
+                            <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                                <input type="text" class="member-name-input bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-500 focus:ring-0 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 outline-none w-full transition-all truncate" value="${escapeHtml(m.name)}" placeholder="Member Name" data-id="${m.id}" />
+                            </div>
+                            <button class="btn-delete-member p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all-300 flex-shrink-0" data-id="${m.id}" title="Remove Member">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <!-- Data Fields -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1 tracking-wider">Total Meals</label>
+                                <input type="number" step="any" min="0" class="member-meals-input w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-brand-500 focus:outline-none dark:text-white" value="${m.meals}" placeholder="e.g. 15" data-id="${m.id}" />
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1 tracking-wider">Payments Given</label>
+                                <input type="text" class="member-cost-input w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-brand-500 focus:outline-none dark:text-white" value="${escapeHtml(m.costRaw)}" placeholder="e.g. 500+200" data-id="${m.id}" />
+                            </div>
+                        </div>
+
+                        <!-- Web Link for Profile Avatar -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1 tracking-wider">Profile Image Link (URL)</label>
+                            <input type="text" class="member-avatar-input w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-brand-500 focus:outline-none dark:text-white placeholder:text-slate-400" value="${escapeHtml(m.avatarUrl || '')}" placeholder="Paste web image link here..." data-id="${m.id}" />
+                        </div>
+
+                        <!-- Real-time cost evaluation calculations / Inline validations -->
+                        <div class="flex items-center justify-between text-[10px] border-t border-slate-100 dark:border-slate-800/50 pt-2">
+                            <span class="text-slate-400">Evaluated Cost:</span>
+                            <span class="font-extrabold text-brand-600 dark:text-brand-400 ${hasCostError ? 'line-through opacity-40' : ''}">
+                                ৳${costInfo.total.toFixed(2)}
+                            </span>
+                        </div>
+
+                        <!-- Live helper feedback expressions or warnings -->
+                        <div class="field-feedback text-[10px] font-medium mt-1">
+                            ${isDuplicate ? '<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Name matches another member</span>' : ''}
+                            ${hasNameError ? '<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Name cannot be blank</span>' : ''}
+                            ${hasMealError && !hasNameError ? '<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Meals must be positive</span>' : ''}
+                            ${hasCostError && !hasNameError && !hasMealError ? `<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> ${costInfo.error}</span>` : ''}
+                            ${!hasNameError && !hasMealError && !hasCostError && !isDuplicate ? `<span class="text-slate-400 dark:text-slate-500 italic flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i> Auto-parsed: ${costInfo.expression}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                membersListContainer.appendChild(card);
+            });
+
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // Update Ledger dynamic calculations output table with stacked sub-shares
+        function renderTable(stats) {
+            resultsTableTbody.innerHTML = '';
+            
+            const activeValidMembers = stats.members.filter(m => m.isValid);
+
+            if (activeValidMembers.length === 0) {
+                tableEmptyFallback.classList.remove('hidden');
+                return;
+            } else {
+                tableEmptyFallback.classList.add('hidden');
+            }
+
+            activeValidMembers.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.className = `border-b border-slate-100 dark:border-slate-800/40 hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-colors`;
+                
+                let balanceColorClass = 'text-slate-500';
+                let pillBgClass = 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+                
+                if (m.status === 'Receive Money') {
+                    balanceColorClass = 'text-emerald-600 dark:text-emerald-400 font-bold text-sm';
+                    pillBgClass = 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400';
+                } else if (m.status === 'Need To Pay') {
+                    balanceColorClass = 'text-rose-600 dark:text-rose-400 font-bold text-sm';
+                    pillBgClass = 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400';
+                }
+
+                const fallbackAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}`;
+                const finalAvatarSrc = m.avatarUrl && m.avatarUrl.trim() !== '' ? m.avatarUrl : fallbackAvatar;
+
+                tr.innerHTML = `
+                    <td class="py-4 pl-2 font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2.5 min-w-[150px]">
+                        <img src="${finalAvatarSrc}" 
+                             class="w-7 h-7 rounded-full object-cover border border-slate-200 dark:border-slate-700 bg-slate-50" 
+                             onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}';" />
+                        <span class="truncate">${escapeHtml(m.name)}</span>
+                    </td>
+                    <td class="py-4 text-center text-slate-600 dark:text-slate-400">${m.meals}</td>
+                    <td class="py-4 text-right text-slate-600 dark:text-slate-400 font-medium">৳${m.costParsed.toFixed(2)}</td>
+                    <td class="py-4 text-right text-slate-500 dark:text-slate-400">
+                        <div class="font-semibold text-slate-800 dark:text-slate-200">৳${m.totalShouldPay.toFixed(2)}</div>
+                        <div class="text-[9px] text-slate-400 dark:text-slate-500">
+                            ৳${m.shouldPayMeals.toFixed(1)} + ৳${m.shouldPayUtilities.toFixed(1)}
+                        </div>
+                    </td>
+                    <td class="py-4 text-right ${balanceColorClass}">৳${m.balance.toFixed(2)}</td>
+                    <td class="py-4 pr-2 text-right">
+                        <span class="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wider ${pillBgClass}">
+                            ${m.status}
+                        </span>
+                    </td>
+                `;
+
+                resultsTableTbody.appendChild(tr);
+            });
+        }
+
+        // Create new member cards safely
+        function addMember() {
+            const newId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+            const defaultMember = {
+                id: newId,
+                name: `Member #${members.length + 1}`,
+                meals: 0,
+                costRaw: '0',
+                avatarUrl: ''
+            };
+            members.push(defaultMember);
+            
+            renderMembersList();
+            triggerMainCalculation();
+            showToast('New member workspace added', 'success');
+
+            // Set focus inside the new input card
+            setTimeout(() => {
+                const card = document.querySelector(`[data-id="${newId}"]`);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    const nameInput = card.querySelector('.member-name-input');
+                    if (nameInput) {
+                        nameInput.focus();
+                        nameInput.select();
+                    }
+                }
+            }, 100);
+        }
+
+        btnAddMember.addEventListener('click', addMember);
+        btnEmptyAdd.addEventListener('click', addMember);
+
+        // Interactive dynamic list adjustments via Event Delegation
+        membersListContainer.addEventListener('input', (e) => {
+            const target = e.target;
+            const memberId = target.getAttribute('data-id');
+            const memberIndex = members.findIndex(m => m.id === memberId);
+            
+            if (memberIndex === -1) return;
+
+            if (target.classList.contains('member-name-input')) {
+                members[memberIndex].name = target.value;
+                // Live update of initials placeholder if avatar link is empty
+                const cardElement = membersListContainer.querySelector(`[data-id="${memberId}"]`);
+                if (cardElement && (!members[memberIndex].avatarUrl || members[memberIndex].avatarUrl.trim() === '')) {
+                    const img = cardElement.querySelector('img');
+                    if (img) {
+                        img.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(target.value || 'User')}`;
+                    }
+                }
+            } else if (target.classList.contains('member-meals-input')) {
+                const val = target.value;
+                members[memberIndex].meals = val === '' ? '' : parseFloat(val);
+            } else if (target.classList.contains('member-cost-input')) {
+                members[memberIndex].costRaw = target.value;
+            } else if (target.classList.contains('member-avatar-input')) {
+                members[memberIndex].avatarUrl = target.value;
+                // Live update of profile picture
+                const cardElement = membersListContainer.querySelector(`[data-id="${memberId}"]`);
+                if (cardElement) {
+                    const img = cardElement.querySelector('img');
+                    if (img) {
+                        img.src = target.value && target.value.trim() !== '' 
+                            ? target.value 
+                            : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(members[memberIndex].name || 'User')}`;
+                    }
+                }
+            }
+
+            // Perform optimized layout update without reconstructing physical input elements (No focus loss)
+            updateSingleCardState(memberId);
+        });
+
+        // Smart Card state refresher (avoids input reset / key jumping)
+        function updateSingleCardState(memberId) {
+            const cardElement = membersListContainer.querySelector(`[data-id="${memberId}"]`);
+            if (!cardElement) return;
+
+            const m = members.find(item => item.id === memberId);
+            if (!m) return;
+
+            const costInfo = parseCost(m.costRaw);
+            const hasNameError = !m.name || m.name.trim() === '';
+            const hasMealError = m.meals === '' || parseFloat(m.meals) < 0;
+            const hasCostError = !costInfo.isValid;
+            const isDuplicate = checkDuplicateName(m.id, m.name);
+
+            // Dynamically recalculate cost labels
+            const totalTextSpan = cardElement.querySelector('.font-extrabold.text-brand-600');
+            if (totalTextSpan) {
+                totalTextSpan.textContent = `৳${costInfo.total.toFixed(2)}`;
+                if (hasCostError) {
+                    totalTextSpan.classList.add('line-through', 'opacity-40');
+                } else {
+                    totalTextSpan.classList.remove('line-through', 'opacity-40');
+                }
+            }
+
+            // Update dynamic visual warnings inside card
+            const feedbackContainer = cardElement.querySelector('.field-feedback');
+            if (feedbackContainer) {
+                let htmlFeedback = '';
+                if (isDuplicate) {
+                    htmlFeedback = '<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> Name matches another member</span>';
+                } else if (hasNameError) {
+                    htmlFeedback = '<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> Name cannot be blank</span>';
+                } else if (hasMealError && !hasNameError) {
+                    htmlFeedback = '<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> Meals must be positive</span>';
+                } else if (hasCostError && !hasNameError && !hasMealError) {
+                    htmlFeedback = `<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> ${costInfo.error}</span>`;
+                } else {
+                    htmlFeedback = `<span class="text-slate-400 dark:text-slate-500 italic flex items-center gap-1"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Auto-parsed: ${costInfo.expression}</span>`;
+                }
+                feedbackContainer.innerHTML = htmlFeedback;
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            // Trigger full math engine calculations instantly
+            triggerMainCalculation();
+        }
+
+        // Delete elements
+        membersListContainer.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.btn-delete-member');
+            if (!deleteBtn) return;
+
+            const memberId = deleteBtn.getAttribute('data-id');
+            const memberIndex = members.findIndex(m => m.id === memberId);
+            
+            if (memberIndex !== -1) {
+                const deletedName = members[memberIndex].name || "Unnamed member";
+                members.splice(memberIndex, 1);
+                
+                renderMembersList();
+                triggerMainCalculation();
+                showToast(`Removed "${deletedName}"`, 'info');
+            }
+        });
+
+        // Trigger visual processing simulation on manual requests
+        btnManualCalculate.addEventListener('click', () => {
+            showToast('Recalculating ledger indexes...', 'info');
+            setTimeout(() => {
+                triggerMainCalculation();
+                showToast('Math engine synced successfully!', 'success');
+            }, 300);
+        });
+
+        // Reset Ledger Data completely
+        btnReset.addEventListener('click', () => {
+            if (confirm("Are you absolutely sure you want to reset all data, shared bills and member profiles? This cannot be undone.")) {
+                members = [];
+                utilitiesRaw = '0';
+                inputUtilitiesBill.value = '0';
+                renderMembersList();
+                triggerMainCalculation();
+                showToast('Database wiped out successfully', 'info');
+            }
+        });
+
+        // Generate and Download PDF directly (Client-side, beautifully formatted)
+        function downloadPDF() {
+            showToast('Generating direct PDF report...', 'info');
+            
+            const stats = calculateSummary();
+            const activeValidMembers = stats.members.filter(m => m.isValid);
+
+            if (activeValidMembers.length === 0) {
+                showToast('No valid member records to generate PDF', 'error');
+                return;
+            }
+
+            // Build dynamic and beautifully clean printable canvas content specifically structured for PDF output
+            const pdfContainer = document.createElement('div');
+            pdfContainer.className = 'p-10 bg-white text-slate-800 font-sans';
+            pdfContainer.style.width = '790px'; // Perfectly scales to standard letter/A4 viewport standard width
+
+            let membersRowsHtml = '';
+            activeValidMembers.forEach(m => {
+                const fallbackAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}`;
+                const avatarSrc = m.avatarUrl && m.avatarUrl.trim() !== '' ? m.avatarUrl : fallbackAvatar;
+
+                membersRowsHtml += `
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 14px 10px; display: flex; align-items: center; gap: 10px;">
+                            <img src="${avatarSrc}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1; background-color: #f8fafc;" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}';" />
+                            <span style="font-weight: 600; color: #1e293b; font-size: 13px;">${escapeHtml(m.name)}</span>
+                        </td>
+                        <td style="padding: 14px 10px; text-align: center; color: #475569; font-size: 13px;">${m.meals}</td>
+                        <td style="padding: 14px 10px; text-align: right; color: #475569; font-size: 13px;">৳${m.costParsed.toFixed(2)}</td>
+                        <td style="padding: 14px 10px; text-align: right; color: #1e293b; font-size: 13px;">
+                            <div style="font-weight: 600;">৳${m.totalShouldPay.toFixed(2)}</div>
+                            <div style="font-size: 9px; color: #94a3b8; font-weight: normal; margin-top: 2px;">
+                                (Meals: ৳${m.shouldPayMeals.toFixed(1)} + Util: ৳${m.shouldPayUtilities.toFixed(1)})
+                            </div>
+                        </td>
+                        <td style="padding: 14px 10px; text-align: right; font-weight: 700; font-size: 13px; color: ${m.balance > 0.005 ? '#10b981' : m.balance < -0.005 ? '#ef4444' : '#64748b'};">
+                            ৳${m.balance.toFixed(2)}
+                        </td>
+                        <td style="padding: 14px 10px; text-align: right;">
+                            <span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+                                background-color: ${m.status === 'Receive Money' ? '#ecfdf5' : m.status === 'Need To Pay' ? '#fef2f2' : '#f1f5f9'};
+                                color: ${m.status === 'Receive Money' ? '#047857' : m.status === 'Need To Pay' ? '#b91c1c' : '#475569'};">
+                                ${m.status}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            pdfContainer.innerHTML = `
+                <!-- Main Header Block -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; padding-bottom: 18px; margin-bottom: 24px;">
+                    <div>
+                        <h1 style="font-size: 26px; font-weight: 800; color: #4f46e5; margin: 0; letter-spacing: -0.5px;">Meal Management</h1>
+                        <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0; font-weight: 500;">Automatic Household Ledger & Expense Settlement Report</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="display: inline-block; padding: 4px 8px; background-color: #f0f3ff; color: #4f46e5; font-size: 10px; font-weight: 800; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px;">LEDGER SHEET</span>
+                        <p style="font-size: 11px; color: #64748b; margin: 6px 0 0 0;">Date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                    </div>
+                </div>
+
+                <!-- 4 KPI Metrics block -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;">
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
+                        <span style="font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Total Members</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #1e293b; margin-top: 4px;">${stats.totalMembers}</div>
+                    </div>
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
+                        <span style="font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Total Meals</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #1e293b; margin-top: 4px;">${stats.totalMeals.toFixed(1).replace(/\.0$/, '')}</div>
+                    </div>
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
+                        <span style="font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Total Food Cost</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #10b981; margin-top: 4px;">৳${stats.totalCost.toFixed(2)}</div>
+                    </div>
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
+                        <span style="font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Meal Rate</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #6366f1; margin-top: 4px;">৳${stats.mealRate.toFixed(2)}</div>
+                    </div>
+                </div>
+
+                <!-- Utilities Info Box -->
+                <div style="background-color: #faf5ff; border: 1px solid #f3e8ff; border-left: 5px solid #a855f7; border-radius: 8px; padding: 14px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 13px; color: #5b21b6; font-weight: 600;">
+                        Shared Utilities Bill: <span style="font-weight: 800; color: #7c3aed;">৳${stats.totalUtilities.toFixed(2)}</span>
+                    </div>
+                    <div style="font-size: 13px; color: #5b21b6; font-weight: 600;">
+                        Equal Share Per Head: <span style="font-weight: 800; color: #7c3aed;">৳${stats.utilitySharePerHead.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                <!-- Main Ledger Statement Table -->
+                <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 24px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #cbd5e1; font-size: 11px; text-transform: uppercase; color: #475569; font-weight: 800; letter-spacing: 0.5px;">
+                            <th style="padding: 10px; background-color: #f8fafc; border-top-left-radius: 6px;">Member Name</th>
+                            <th style="padding: 10px; background-color: #f8fafc; text-align: center;">Meals</th>
+                            <th style="padding: 10px; background-color: #f8fafc; text-align: right;">Paid Cost</th>
+                            <th style="padding: 10px; background-color: #f8fafc; text-align: right;">Should Pay Share</th>
+                            <th style="padding: 10px; background-color: #f8fafc; text-align: right;">Net Balance</th>
+                            <th style="padding: 10px; background-color: #f8fafc; text-align: right; border-top-right-radius: 6px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${membersRowsHtml}
+                    </tbody>
+                </table>
+
+                <!-- Bottom Summary section -->
+                <div style="display: flex; justify-content: space-between; font-size: 13px; border-top: 1px solid #e2e8f0; padding-top: 18px; margin-top: 10px;">
+                    <div>
+                        <span style="color: #64748b; font-weight: 500;">Total Payouts to Receive:</span>
+                        <strong style="color: #10b981; font-size: 15px; margin-left: 6px; font-weight: 800;">৳${stats.totalExtra.toFixed(2)}</strong>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="color: #64748b; font-weight: 500;">Total Payouts to Collect:</span>
+                        <strong style="color: #ef4444; font-size: 15px; margin-left: 6px; font-weight: 800;">৳${stats.totalDue.toFixed(2)}</strong>
+                    </div>
+                </div>
+
+                <!-- Footer disclaimer -->
+                <div style="text-align: center; margin-top: 50px; border-top: 1px dashed #cbd5e1; padding-top: 16px; font-size: 10px; color: #94a3b8; font-weight: 500;">
+                     <p>© 2026 Meal Management Calculator. MD Nahiduzzaman Dipu</p>
+                </div>
+            `;
+
+            // Setup options configuration for A4 print optimization
+            const opt = {
+                margin:       10,
+                filename:     `Meal_Management_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2.5, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Run direct layout conversion and download
+            html2pdf().from(pdfContainer).set(opt).save().then(() => {
+                showToast('Direct PDF download completed!', 'success');
+            }).catch(err => {
+                console.error(err);
+                showToast('Direct PDF generation failed', 'error');
+            });
+        }
+
+        btnDownloadPdf.addEventListener('click', downloadPDF);
+
+        // Native Print Document trigger
+        btnPrint.addEventListener('click', () => {
+            window.print();
+        });
+
+        // Helper to securely clean up HTML strings inside template literal generation (XSS guard)
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
