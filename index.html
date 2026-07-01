@@ -282,7 +282,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                         <div>
                             <h3 class="text-lg font-bold text-slate-900 dark:text-white">Manage Members</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Add individuals, custom profile image links and adjust meal counts.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Add individuals and adjust meal counts easily.</p>
                         </div>
                         <button id="btn-add-member" class="px-4 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 shadow-md hover:shadow-lg transform active:scale-95 transition-all-300">
                             <i data-lucide="user-plus" class="w-4 h-4"></i>
@@ -431,8 +431,7 @@
 
     <!-- Footer Space -->
     <footer class="mt-12 py-8 bg-slate-100 dark:bg-slate-900/50 border-t border-slate-200/50 dark:border-slate-800/40 text-center text-xs text-slate-400 no-print">
-        <p>© 2026 Meal Management Calculator. Crafted for professional household resource accounting.</p>
-        <p class="mt-1 font-semibold text-slate-500">Pure Offline Secure Client Ledger</p>
+         <p>© 2026 Meal Management Calculator. MD Nahiduzzaman Dipu</p>
     </footer>
 
     <!-- JavaScript Logic Block -->
@@ -860,8 +859,7 @@
                     id: (index + 1).toString(),
                     name: name,
                     meals: 0,
-                    costRaw: '0',
-                    avatarUrl: ''
+                    costRaw: '0'
                 }));
                 utilitiesRaw = '0';
                 inputUtilitiesBill.value = '0';
@@ -891,19 +889,17 @@
                 const hasCostError = !costInfo.isValid;
                 const isDuplicate = checkDuplicateName(m.id, m.name);
 
-                // Build avatar preview with dynamic fallback
-                const fallbackAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name || 'User')}`;
-                const finalAvatarSrc = m.avatarUrl && m.avatarUrl.trim() !== '' ? m.avatarUrl : fallbackAvatar;
+                // Build avatar preview dynamically using free initials API
+                const finalAvatarSrc = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name || 'User')}`;
 
                 card.innerHTML = `
                     <div class="flex flex-col gap-3">
                         <div class="flex items-center justify-between gap-3">
-                            <!-- Avatar Preview with error fallback -->
+                            <!-- Avatar Preview -->
                             <div class="relative flex-shrink-0">
                                 <img src="${finalAvatarSrc}" 
                                      alt="Profile image" 
-                                     class="w-10 h-10 rounded-full border-2 border-brand-500/30 dark:border-brand-500/20 object-cover bg-slate-100 dark:bg-slate-900 shadow-sm"
-                                     onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name || 'User')}';" />
+                                     class="w-10 h-10 rounded-full border-2 border-brand-500/30 dark:border-brand-500/20 object-cover bg-slate-100 dark:bg-slate-900 shadow-sm" />
                             </div>
 
                             <!-- Header Context (Name Input & Delete Button) -->
@@ -925,12 +921,6 @@
                                 <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1 tracking-wider">Payments Given</label>
                                 <input type="text" class="member-cost-input w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-brand-500 focus:outline-none dark:text-white" value="${escapeHtml(m.costRaw)}" placeholder="e.g. 500+200" data-id="${m.id}" />
                             </div>
-                        </div>
-
-                        <!-- Web Link for Profile Avatar -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1 tracking-wider">Profile Image Link (URL)</label>
-                            <input type="text" class="member-avatar-input w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-brand-500 focus:outline-none dark:text-white placeholder:text-slate-400" value="${escapeHtml(m.avatarUrl || '')}" placeholder="Paste web image link here..." data-id="${m.id}" />
                         </div>
 
                         <!-- Real-time cost evaluation calculations / Inline validations -->
@@ -988,14 +978,12 @@
                     pillBgClass = 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400';
                 }
 
-                const fallbackAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}`;
-                const finalAvatarSrc = m.avatarUrl && m.avatarUrl.trim() !== '' ? m.avatarUrl : fallbackAvatar;
+                const finalAvatarSrc = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name || 'User')}`;
 
                 tr.innerHTML = `
                     <td class="py-4 pl-2 font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2.5 min-w-[150px]">
                         <img src="${finalAvatarSrc}" 
-                             class="w-7 h-7 rounded-full object-cover border border-slate-200 dark:border-slate-700 bg-slate-50" 
-                             onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}';" />
+                             class="w-7 h-7 rounded-full object-cover border border-slate-200 dark:border-slate-700 bg-slate-50" />
                         <span class="truncate">${escapeHtml(m.name)}</span>
                     </td>
                     <td class="py-4 text-center text-slate-600 dark:text-slate-400">${m.meals}</td>
@@ -1025,8 +1013,7 @@
                 id: newId,
                 name: `Member #${members.length + 1}`,
                 meals: 0,
-                costRaw: '0',
-                avatarUrl: ''
+                costRaw: '0'
             };
             members.push(defaultMember);
             
@@ -1061,9 +1048,9 @@
 
             if (target.classList.contains('member-name-input')) {
                 members[memberIndex].name = target.value;
-                // Live update of initials placeholder if avatar link is empty
+                // Live update of initials placeholder
                 const cardElement = membersListContainer.querySelector(`[data-id="${memberId}"]`);
-                if (cardElement && (!members[memberIndex].avatarUrl || members[memberIndex].avatarUrl.trim() === '')) {
+                if (cardElement) {
                     const img = cardElement.querySelector('img');
                     if (img) {
                         img.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(target.value || 'User')}`;
@@ -1074,18 +1061,6 @@
                 members[memberIndex].meals = val === '' ? '' : parseFloat(val);
             } else if (target.classList.contains('member-cost-input')) {
                 members[memberIndex].costRaw = target.value;
-            } else if (target.classList.contains('member-avatar-input')) {
-                members[memberIndex].avatarUrl = target.value;
-                // Live update of profile picture
-                const cardElement = membersListContainer.querySelector(`[data-id="${memberId}"]`);
-                if (cardElement) {
-                    const img = cardElement.querySelector('img');
-                    if (img) {
-                        img.src = target.value && target.value.trim() !== '' 
-                            ? target.value 
-                            : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(members[memberIndex].name || 'User')}`;
-                    }
-                }
             }
 
             // Perform optimized layout update without reconstructing physical input elements (No focus loss)
@@ -1130,7 +1105,7 @@
                 } else if (hasCostError && !hasNameError && !hasMealError) {
                     htmlFeedback = `<span class="text-rose-500 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> ${costInfo.error}</span>`;
                 } else {
-                    htmlFeedback = `<span class="text-slate-400 dark:text-slate-500 italic flex items-center gap-1"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Auto-parsed: ${costInfo.expression}</span>`;
+                    htmlFeedback = `<span class="text-slate-400 dark:text-slate-500 italic flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i> Auto-parsed: ${costInfo.expression}</span>`;
                 }
                 feedbackContainer.innerHTML = htmlFeedback;
                 
@@ -1201,13 +1176,12 @@
 
             let membersRowsHtml = '';
             activeValidMembers.forEach(m => {
-                const fallbackAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}`;
-                const avatarSrc = m.avatarUrl && m.avatarUrl.trim() !== '' ? m.avatarUrl : fallbackAvatar;
+                const avatarSrc = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name || 'User')}`;
 
                 membersRowsHtml += `
                     <tr style="border-bottom: 1px solid #e2e8f0;">
                         <td style="padding: 14px 10px; display: flex; align-items: center; gap: 10px;">
-                            <img src="${avatarSrc}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1; background-color: #f8fafc;" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}';" />
+                            <img src="${avatarSrc}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1; background-color: #f8fafc;" />
                             <span style="font-weight: 600; color: #1e293b; font-size: 13px;">${escapeHtml(m.name)}</span>
                         </td>
                         <td style="padding: 14px 10px; text-align: center; color: #475569; font-size: 13px;">${m.meals}</td>
@@ -1306,7 +1280,7 @@
 
                 <!-- Footer disclaimer -->
                 <div style="text-align: center; margin-top: 50px; border-top: 1px dashed #cbd5e1; padding-top: 16px; font-size: 10px; color: #94a3b8; font-weight: 500;">
-                     <p>© 2026 Meal Management Calculator. MD Nahiduzzaman Dipu</p>
+                    Generated via Meal Management Calculator Dashboard. Built-in Client Security Guaranteed.
                 </div>
             `;
 
